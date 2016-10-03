@@ -1,0 +1,59 @@
+/**
+ * Removes low performance Display placements with more than 1000 impressions and no clicks and no view through conversions 
+ * (you can edit these values in the top level variables).
+ * If one of the placements detected is anonymous.google, the script doesn't exclude it  
+ *
+ * @author Alberto Esteves
+ * 
+ * Inspired by:
+ *  
+ *  Dawson Reid
+ *  Andrew Breen
+ */
+
+
+var impressionsMinimum = 100; // Selecciona las ubicaciones con este numero de impresiones minimo 
+var clicksLimit = 0; // Selecciona las ubicaciones que no sobrepasen este numero de clics 
+var ViewThroughConversionsLimit = 0; // Selecciona las ubicaciones que no sobrepasen este numero de conversiones post-impresion 
+
+ 
+// -------------------------------------------------------
+
+
+function removeLowPerformanceDisplayPlacements (placementSelector) {
+
+  var placementIterator = placementSelector.get();
+  var campaign, excludeOperation, placement, placementUrl;
+  
+  while (placementIterator.hasNext()) {
+    placement = placementIterator.next();
+    placementUrl = placement.getUrl();
+ //   Logger.log(placementUrl);
+	if (placementUrl != 'anonymous.google') {
+ 
+   	  campaign = placement.getCampaign();
+	  excludeOperation = campaign.display().newPlacementBuilder().withUrl(placementUrl).exclude();
+      
+      if (!excludeOperation.isSuccessful()) {
+		  Logger.log("Could not exclude : " + placementUrl);
+		}
+      
+	} else {
+	  
+      Logger.log("Don't exclude anonymous.google.com !");
+	}
+    
+  } // End of While 
+} // End of function removeLowPerformanceDisplayPlacements
+
+
+function main () {
+ var placementSelector = AdWordsApp.display().placements()
+ 	.withCondition("Clicks <= "+clicksLimit)
+	.withCondition("Impressions >= "+impressionsMinimum)
+	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
+	.withCondition("CampaignStatus != REMOVED")
+	.forDateRange('ALL_TIME');
+  
+  removeLowPerformanceDisplayPlacements(placementSelector);
+}
