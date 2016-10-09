@@ -3,6 +3,7 @@
  * (you can edit these values on the top level variables).
  * If one of the placements detected is anonymous.google, the script doesn't exclude it  
  * Script saves all detected placements in a spreadsheet
+ * If the script execution is interrupted, it saves the last account executed and will start from that account at the next execution
  *
  * @author Alberto Esteves
  * 
