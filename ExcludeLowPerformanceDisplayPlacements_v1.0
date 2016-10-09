@@ -1,6 +1,6 @@
 /**
- * Removes low performance Display placements with more than 1000 impressions and no clicks and no view through conversions 
- * (you can edit these values in the top level variables).
+ * This Account level script removes low performance Display placements with more than 1000 impressions AND no clicks AND no view through conversions AND no conversions 
+ * (you can edit these values on the top level variables).
  * If one of the placements detected is anonymous.google, the script doesn't exclude it  
  *
  * @author Alberto Esteves
@@ -12,48 +12,31 @@
  */
 
 
-var impressionsMinimum = 100; // Selecciona las ubicaciones con este numero de impresiones minimo 
-var clicksLimit = 0; // Selecciona las ubicaciones que no sobrepasen este numero de clics 
-var ViewThroughConversionsLimit = 0; // Selecciona las ubicaciones que no sobrepasen este numero de conversiones post-impresion 
+var impressionsMinimum = 1000; // Select Display placements which have at least that number of impressions 
+var clicksLimit = 0; // Select Display placements which have no more than that number of clicks 
+var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
+var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
 
  
 // -------------------------------------------------------
 
-
-function removeLowPerformanceDisplayPlacements (placementSelector) {
-
-  var placementIterator = placementSelector.get();
-  var campaign, excludeOperation, placement, placementUrl;
-  
-  while (placementIterator.hasNext()) {
-    placement = placementIterator.next();
-    placementUrl = placement.getUrl();
- //   Logger.log(placementUrl);
-	if (placementUrl != 'anonymous.google') {
- 
-   	  campaign = placement.getCampaign();
-	  excludeOperation = campaign.display().newPlacementBuilder().withUrl(placementUrl).exclude();
-      
-      if (!excludeOperation.isSuccessful()) {
-		  Logger.log("Could not exclude : " + placementUrl);
-		}
-      
-	} else {
-	  
-      Logger.log("Don't exclude anonymous.google.com !");
-	}
-    
-  } // End of While 
-} // End of function removeLowPerformanceDisplayPlacements
-
-
 function main () {
- var placementSelector = AdWordsApp.display().placements()
+  var DisplayPlacements = AdWordsApp.display().placements()
  	.withCondition("Clicks <= "+clicksLimit)
 	.withCondition("Impressions >= "+impressionsMinimum)
+    .withCondition("Conversions <= "+conversionsLimit)
 	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
 	.withCondition("CampaignStatus != REMOVED")
 	.forDateRange('ALL_TIME');
+    .get();
+    
+  var urlplacement;
+  var placement;
   
-  removeLowPerformanceDisplayPlacements(placementSelector);
+  while (DisplayPlacements.hasNext()) {
+   
+    placement = DisplayPlacements.next();
+    Logger.log(placement.getUrl());
+    placement.remove();
+  }  
 }
