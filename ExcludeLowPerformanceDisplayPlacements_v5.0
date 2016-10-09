@@ -1,8 +1,8 @@
 /**
- * Removes low performance Display placements with more than 1000 impressions and no clicks and no view through conversions 
- * (you can edit these values in the top level variables).
+ * This script removes low performance Display placements with more than 1000 impressions AND no clicks AND no view through conversions AND no conversions 
+ * (you can edit these values on the top level variables).
  * If one of the placements detected is anonymous.google, the script doesn't exclude it  
- * Save all detected placements in a spreadsheet
+ * Script saves all detected placements in a spreadsheet
  *
  * @author Alberto Esteves
  * 
@@ -18,7 +18,7 @@ var clicksLimit = 0; // Select Display placements which have no more than that n
 var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
 var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
 var mccLabelText = "no label"; // Filter AdWords accounts which have a MCC Account label
-							   // If you don't want to filter by any MCC label, DON'T make any change in this text 
+							   // If you don't want to filter by any MCC label, DO NOT make any change in this text 
 							  							  
 var SPREADSHEET_URL = "INSERT YOUR SPREADSHEET URL HERE"; // Make a copy from https://docs.google.com/spreadsheets/d/1QM25rhifHLN6xElLyMPgeJVtx5hz4qI9415aNnyhmmA/
 var SHEET_NAME = "LowPerformance placements"; // Name of the specific sheet in the spreadsheet.
@@ -44,7 +44,7 @@ function removeLowPerformanceDisplayPlacements (placementSelector) {
 	
 	if (placementUrl != 'anonymous.google') {
  
-      newRow = sheet.getRange(2,6).getValue() + 1; // Get the last row with data from the spreadsheet and goes to the next one
+      newRow = sheet.getRange(2,6).getValue() + 1; // newRow get the last row with data from the spreadsheet and goes to the next one
       placementStats = placement.getStatsFor('ALL_TIME');
 	  campaign = placement.getCampaign();
       excludeOperation = campaign.display().newPlacementBuilder().withUrl(placementUrl).exclude(); // Exclude Display placement detected
@@ -85,7 +85,7 @@ function executeInSequence (sequentialIds, executeSequentiallyFunc) {
   sequentialIds.forEach(function (accountId) {
     var account = MccApp.accounts().withIds([accountId]).get().next();
     lastExecutedAccount++; 
-	sheet.getRange(2,7).setValue(lastExecutedAccount); // Update lastExecutedAccount value in the spreadsheet
+	sheet.getRange(2,7).setValue(lastExecutedAccount); // Updating lastExecutedAccount value in the spreadsheet
     MccApp.select(account);
     executeSequentiallyFunc();
   });
@@ -111,7 +111,7 @@ function main () {
     }
     accountIds.push(accountId);
     
-    lastExecutedAccount = sheet.getRange(2,7).getValue() + 1; // Get the number of AdWords accounts executed at the last script execution.  
+    lastExecutedAccount = sheet.getRange(2,7).getValue() + 1; // lastExecutedAccount get the number of AdWords accounts executed at the last script execution.  
     if (lastExecutedAccount != 1){ // If the last script execution was interrupted, then subtract 1 to lastExecutedAccount (start script execution from the account where script was interrupted)
       lastExecutedAccount--;
     }
@@ -128,5 +128,5 @@ function main () {
   }
   
   lastExecutedAccount = 0; // If script execution finishes correctly, then reset lastExecutedAccount to default value
-  sheet.getRange(2,7).setValue(lastExecutedAccount); // Update lastExecutedAccount value in the spreadsheet
+  sheet.getRange(2,7).setValue(lastExecutedAccount); // Updating lastExecutedAccount value in the spreadsheet
 }
