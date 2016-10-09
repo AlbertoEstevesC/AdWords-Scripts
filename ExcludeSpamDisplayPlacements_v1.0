@@ -1,0 +1,41 @@
+/**
+ * This Account level script removes Display placements with Super High CTR AND no view through conversions AND no conversions 
+ * (you can edit these values on the top level variables).
+ * If one of the placements detected is anonymous.google, the script doesn't exclude it  
+ *
+ * @author Alberto Esteves 
+ * 
+ * Inspired by:
+ *  
+ *  Dawson Reid
+ *  Andrew Breen
+ */
+
+
+var impressionsMinimum = 2; // Select Display placements which have at least that number of impressions 
+var maxCtr = 0.49; // Select Display placements which have at least that Click Through Rate percentage 
+var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
+var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
+ 
+// -------------------------------------------------------
+
+function main () {
+  var DisplayPlacements = AdWordsApp.display().placements()
+ 	.withCondition("Ctr > "+maxCtr)
+	.withCondition("Impressions >= "+impressionsMinimum)
+    .withCondition("Conversions <= "+conversionsLimit)
+	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
+	.withCondition("CampaignStatus != REMOVED")
+	.forDateRange('ALL_TIME')
+    .get();
+    
+  var urlplacement;
+  var placement;
+  
+  while (DisplayPlacements.hasNext()) {
+   
+    placement = DisplayPlacements.next();
+    Logger.log(placement.getUrl());
+    placement.remove();
+  }  
+}
