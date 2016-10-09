@@ -1,5 +1,5 @@
 /**
- * This script removes low performance Display placements with more than 1000 impressions AND no clicks AND no view through conversions AND no conversions 
+ * This MCC Level script removes low performance Display placements with more than 1000 impressions AND no clicks AND no view through conversions AND no conversions 
  * (you can edit these values on the top level variables).
  * If one of the placements detected is anonymous.google, the script doesn't exclude it  
  * Script saves all detected placements in a spreadsheet
