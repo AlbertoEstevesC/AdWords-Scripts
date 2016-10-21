@@ -17,6 +17,7 @@ var impressionsMinimum = 2; // Select Display placements which have at least tha
 var maxCtr = 0.49; // Select Display placements which have at least that Click Through Rate percentage 
 var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
 var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
+var timePeriod = "ALL_TIME"; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_campaignselector?hl=es-419#forDateRange_1  							  							  
  
 // -------------------------------------------------------
 
@@ -24,7 +25,7 @@ var ViewThroughConversionsLimit = 0; // Select Display placements which have no 
 function removeLowPerformanceDisplayPlacements (placementSelector) {
 
   var placementIterator = placementSelector.get();
-  var campaign, excludeOperation, placement, placementUrl;
+  var adGroup, excludeOperation, placement, placementUrl;
   
   while (placementIterator.hasNext()) {
     placement = placementIterator.next();
@@ -32,8 +33,8 @@ function removeLowPerformanceDisplayPlacements (placementSelector) {
   //  Logger.log(placementUrl);
 	
 	if (placementUrl != 'anonymous.google') {
-	  campaign = placement.getCampaign();
-      excludeOperation = campaign.display().newPlacementBuilder().withUrl(placementUrl).exclude(); // Exclude Display placement detected
+      adGroup = placement.getAdGroup();
+      excludeOperation = adGroup.display().newPlacementBuilder().withUrl(placementUrl).exclude(); // Exclude Display placement detected
 
       if (!excludeOperation.isSuccessful()) {
 		  Logger.log("Could not exclude : " + placementUrl);
@@ -52,7 +53,7 @@ function run () {
     .withCondition("Conversions <= "+conversionsLimit)
 	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
 	.withCondition("CampaignStatus != REMOVED")
-	.forDateRange('ALL_TIME');
+	.forDateRange(timePeriod);
   
   removeLowPerformanceDisplayPlacements(placementSelector);
 } // End of run function
