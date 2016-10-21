@@ -17,6 +17,7 @@ var impressionsMinimum = 1000; // Select Display placements which have at least 
 var clicksLimit = 0; // Select Display placements which have no more than that number of clicks 
 var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
 var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
+var timePeriod = "ALL_TIME"; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_campaignselector?hl=es-419#forDateRange_1  							  							  
 
  
 // -------------------------------------------------------
@@ -28,7 +29,7 @@ function main () {
     .withCondition("Conversions <= "+conversionsLimit)
 	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
 	.withCondition("CampaignStatus != REMOVED")
-	.forDateRange('ALL_TIME');
+	.forDateRange(timePeriod);
     .get();
     
   var urlplacement;
