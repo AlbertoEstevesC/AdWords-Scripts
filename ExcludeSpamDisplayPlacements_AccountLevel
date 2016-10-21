@@ -1,5 +1,5 @@
 /**
- * This Account level script removes Display placements with Super High CTR AND no view through conversions AND no conversions 
+ * This Account level script removes (at campaign level) Display placements with Super High CTR AND no view through conversions AND no conversions 
  * (you can edit these values on the top level variables).
  * If one of the placements detected is anonymous.google, the script doesn't exclude it  
  *
