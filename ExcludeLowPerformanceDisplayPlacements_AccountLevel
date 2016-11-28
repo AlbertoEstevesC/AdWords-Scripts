@@ -29,7 +29,7 @@ function main () {
     .withCondition("Conversions <= "+conversionsLimit)
 	.withCondition("ViewThroughConversions <= "+ViewThroughConversionsLimit)
 	.withCondition("CampaignStatus != REMOVED")
-	.forDateRange(timePeriod);
+	.forDateRange(timePeriod)
     .get();
     
   var urlplacement;
