@@ -1,7 +1,7 @@
 /**
- *   This script pause keywords that matches with some KPIs and Labels conditions in the period of time chosen
+ *   This script pause keywords that matches with some KPIs and Labels conditions for the chosen period of time
  *   
- *   KPIs available: 
+ *   KPIs available for Keywords filtering: 
  *
  *   Keyword Match Types (Broad, Phrase and Exact)
  *   Minimum Quality Score   | Maximum Quality Score | Keywords with NULL Quality Score
