@@ -1,0 +1,479 @@
+/**
+ *   This script pause keywords that matches with some KPIs and Labels conditions in the period of time chosen
+ *   
+ *   KPIs available: 
+ *
+ *   Keyword Match Types (Broad, Phrase and Exact)
+ *   Minimum Quality Score   | Maximum Quality Score | Keywords with NULL Quality Score
+ *   Minimum Impressions              | Maximum Impressions
+ *   Minimum Clicks                   | Maximum Clicks     
+ *   Minimum Conversions              | Maximum Conversions
+ *   Minimum Cost                     | Maximum Cost 
+ *   Minimum Cost per Conversion      | Maximum Cost per Conversion
+ *   Minimum View Through Conversions | Maximum View Through Conversions 
+ *   Minimum Average Position         | Maximum Average Position 
+ *   Minimum Conversion rate          | Maximum Conversion rate
+ *   Minimum CTR                      | Maximum CTR
+ * 
+ *   Filtering Labels available:
+ * 
+ *   mccLabelText       | Accounts filtering by this Label text
+ *   campaignLabelText  | Campaigns filtering by this Label text
+ *   adGroupLabelText   | adGroups filtering by this Label text
+ *   keywordLabelText   | keywords filtering by this Label text
+ *
+ *   You can receive script execution results by email putting your email at RECIPIENT_EMAIL variable
+ *
+ *   This script can be executed at MCC level and Account level also changing the value of mccLevelScript variable
+ *
+ *   Last version available in: ENLACE A GITHUB
+ *
+ *   @Author: Alberto Esteves Correia
+ *   www.albertoestevescorreia.com
+ **/
+
+// ---------------- GLOBAL VARIABLES ---------------------------
+
+var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution
+var RECIPIENT_EMAIL = "alberto.esteves.correia@gmail.com"; // Enter an email if you want to receive script changes notifications
+var timePeriod = 'ALL_TIME'; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_keywordselector#forDateRange_1  	
+
+
+// Maximun and Minimum filtering KPIs values // DON'T change KPIs values if you don't want to filter by them
+
+var keywordMatchTypes = ' [BROAD, PHRASE, EXACT] '; // Keyword Matches. Keep ONLY the matches you want to filter
+var qualityScoreNull = false; // "true" value for including keywords without QS // "false" value for excluding them
+
+
+// Integer values // NO decimals
+
+var qualityScoreMin = null; 
+var qualityScoreMax = null; 
+
+var impressionsMin = null; 
+var impressionsMax = null; 
+
+var clicksMin = null; 
+var clicksMax = null; 
+
+var conversionsMin = null; 
+var conversionsMax = null; 
+
+var costMin = null; 
+var costMax = null; 
+
+var viewThroughConversionsMin = null; 
+var viewThroughConversionsMax = null; 
+
+
+// Number values with decimals allowed (if you want)
+
+var cpaMin = null; 
+var cpaMax = null; 
+
+var avgPositionMin = null; 
+var avgPositionMax = null; 
+
+
+// Percentage values // 0% = 0.00, 1% = 0.01, 4,5% = 0.045, 10% = 0.10, 100% = 1.00, etc. 
+
+var conversionRateMin = null; 
+var conversionRateMax = null; 
+
+var ctrMin = null; 
+var ctrMax = null; 
+
+
+// FILTERING LABELS // If you don't want to filter by any label, DON'T make any change in its text // 'no label' = NO filtering
+
+var mccLabelText = 'no label'; // Filter AdWords accounts which have this MCC Account label						  
+var campaignLabelText = 'no label'; // Filter AdWords campaigns which have this campaign label
+var adGroupLabelText = 'no label'; // Filter AdWords adGroups which have this adGroup label
+var keywordLabelText = 'no label'; // Filter AdWords keywords which have this keyword label
+
+
+// Auxiliary Variables
+
+var queryQs = "";                            
+var query = 'KeywordMatchType IN '+keywordMatchTypes; 
+var scriptLabel = "botScript did it"; // Script will add this label to the keywords paused by it // If label doesn't exist, the script will create it 
+var campaignLabelId, adGroupLabelId, keywordLabelId;
+var subject = "Results from Pause Keywords Script execution";
+var body = "RESULTS from Pause Keywords Script execution: \n";
+var subject_error = "ERROR during Script execution";
+
+// ------------------------------------------------------------------------------------------------------------
+
+
+
+function run (){ 
+// ---------------------------- Getting labels IDs -----------------------------
+
+  var labels = AdWordsApp.labels().get();
+  var labelAux, labelNameAux;
+  var accountName = AdWordsApp.currentAccount().getName();
+  
+  //Logger.log("Cuenta: " + accountName);
+  body = body + "NAME: " + accountName + "\n\n";
+  
+  campaignLabelId = null;
+  adGroupLabelId = null;
+  keywordLabelId = null;
+  
+  while (labels.hasNext()){
+    labelAux = labels.next();
+    labelNameAux = labelAux.getName(); 
+  
+    if (labelNameAux == campaignLabelText) { 
+      campaignLabelId = labelAux.getId(); 
+    }
+    
+    if (labelNameAux == adGroupLabelText) { 
+      adGroupLabelId = labelAux.getId(); 
+    }    
+ 
+    if (labelNameAux == keywordLabelText) { 
+      keywordLabelId = labelAux.getId(); 
+    }   
+  }
+  
+  if ((campaignLabelId == null) && (campaignLabelText != 'no label')) {
+    body = body + "campaignLabelText Label doesn't exist in the account: " + accountName + "\n";
+    body = body + "Paused Keywords: 0 \n";
+    return false;
+  }
+  
+  if ((adGroupLabelId == null) && (adGroupLabelText != 'no label')) {
+    body = body + "adGroupLabelText Label doesn't exist in the account: " + accountName + "\n";
+    body = body + "Paused Keywords: 0 \n";
+    return false;
+  }
+
+  if ((keywordLabelId == null) && (keywordLabelText != 'no label')) {
+    body = body + "keywordLabelText Label doesn't exist in the account: " + accountName + "\n";
+    body = body + "Paused Keywords: 0 \n";
+    return false;
+  }
+
+// ------------------------------- Getting filtered campaigns -------------------------------------
+
+  var campaignIterator;
+  var campaignIds = [];
+  var campaignId;
+  
+  if (campaignLabelId != null) {
+    campaignIterator = AdWordsApp.campaigns()
+                                 .withCondition("LabelIds CONTAINS_ANY ["+campaignLabelId+"] ")
+                                 .orderBy('CampaignId')
+                                 .get();
+    
+    if (!campaignIterator.hasNext()){
+        body = body + "campaignLabelText exists but is not applied to any campaign for this account \n";
+        body = body + "Paused Keywords: 0 \n";
+        return false; 
+    }  
+    
+  } else { // no campaignLabel filtering
+    campaignIterator = AdWordsApp.campaigns()
+                                 .orderBy('CampaignId')
+                                 .get();
+    }
+  
+  while (campaignIterator.hasNext()){
+    campaignId = campaignIterator.next().getId();
+    campaignIds.push(campaignId);
+  }  
+
+    
+// ------------------------------- Getting filtered adGroups -------------------------------------
+ 
+  var adGroupIterator;
+  var adGroupIds = [];
+  var adGroupId;
+
+  if (adGroupLabelId != null) {
+    adGroupIterator = AdWordsApp.adGroups().withCondition("LabelIds CONTAINS_ANY [" + adGroupLabelId +"]")
+                                           .withCondition("CampaignId IN [" + campaignIds + "]") 
+                                           .orderBy('AdGroupId')
+                                           .get();
+    
+    if (!adGroupIterator.hasNext()) {
+        body = body + "adGroupLabelText exists but is not applied to any adGroup for this account \n";
+        body = body + "Paused Keywords: 0 \n";  
+        return false;  
+    }   
+    
+  } else { // no adGroupLabel filtering
+    adGroupIterator = AdWordsApp.adGroups().withCondition("CampaignId IN [" + campaignIds + "]") 
+                                           .orderBy('AdGroupId')
+                                           .get();    
+  }
+
+  while (adGroupIterator.hasNext()){
+    adGroupId = adGroupIterator.next().getId();
+    adGroupIds.push(adGroupId);
+  }  
+ 
+
+// ------------------------------- Getting filtered keywords -------------------------------------
+
+  var keywordIterator, keywordIteratorAux;
+  var keywordIds = []; 
+  var keywordId;
+  var adGroupId;
+  
+  if (keywordLabelId != null) {
+    keywordIterator = AdWordsApp.keywords()
+                                .withCondition("LabelIds CONTAINS_ANY [" + keywordLabelId + "] ")
+                                .withCondition("AdGroupId IN [" + adGroupIds + "]")
+								.withCondition(query + queryQs)
+                                .forDateRange(timePeriod)
+                                .orderBy('Id')
+                                .get();
+    if (qualityScoreNull) {
+      keywordIteratorAux = AdWordsApp.keywords()
+                                     .withCondition("LabelIds CONTAINS_ANY [" + keywordLabelId + "] ")
+                                     .withCondition("AdGroupId IN [" + adGroupIds + "]")
+								     .withCondition(query + " AND HasQualityScore = 'FALSE' ")
+                                     .forDateRange(timePeriod)
+                                     .orderBy('Id')
+                                     .get();    
+    }
+
+    if (!keywordIterator.hasNext()) {
+
+      if (!qualityScoreNull) {
+        body = body + "keywordLabelText exists but is not applied to any filtered keyword for this account \n";
+        body = body + "Paused Keywords: 0 \n";
+        return false; 
+        
+      } else if (!keywordIteratorAux.hasNext()){
+        body = body + "keywordLabelText exists but is not applied to any filtered keyword for this account \n";
+        body = body + "Paused Keywords: 0 \n";
+        return false;         
+      }
+    }
+  } else { // no keywordLabel filtering   
+    keywordIterator = AdWordsApp.keywords()
+	                            .withCondition("AdGroupId IN [" + adGroupIds + "] ")
+		  				        .withCondition(query + queryQs)
+                                .forDateRange(timePeriod)
+                                .orderBy('Id')
+                                .get();
+    
+      if (qualityScoreNull) {
+        keywordIteratorAux = AdWordsApp.keywords()
+                                       .withCondition("LabelIds CONTAINS_ANY [" + keywordLabelId + "] ")
+                                       .withCondition("AdGroupId IN [" + adGroupIds + "]")
+								       .withCondition(query + " AND HasQualityScore = 'FALSE' ")
+                                       .forDateRange(timePeriod)
+                                       .orderBy('Id')
+                                       .get();    
+      }
+   }
+  
+// ------------------------------- Checking script label -------------------------------------
+  
+  var label = AdWordsApp.labels().withCondition("LabelName = '"+ scriptLabel +"'").get();
+  if (!label.hasNext()) {
+    AdWordsApp.createLabel(scriptLabel, "Label created by botScript", "#FF3300");
+    body = body + "Script Label '" + scriptLabel + "' didn't exist and was created in account: " + accountName + "\n";
+  } else {
+    body = body + "Script Label '" + scriptLabel + "' was already created in account: " + accountName + "\n";
+  }  
+
+// ------------------------------- Pausing filtered keywords -------------------------------------
+
+  var keyword;
+  var i = 0;
+  
+  while (keywordIterator.hasNext()) {
+    keyword = keywordIterator.next();
+    // Logger.log("Keyword: " + keyword.getText());
+    keyword.pause();
+    keyword.applyLabel(scriptLabel);
+    i++;
+  } 
+
+  if (qualityScoreNull) {
+    while (keywordIteratorAux.hasNext()) {
+      keyword = keywordIteratorAux.next();
+      // Logger.log("Keyword: " + keyword.getText());
+      keyword.pause();
+      keyword.applyLabel(scriptLabel);
+      i++;
+    }
+  }
+   
+  body = body + "Paused Keywords: " + i + "\n";
+  return true;
+} // End of run function
+
+
+function buildQuery (){
+
+  if (impressionsMin != null){
+    query = query + ' AND Impressions >= ' + impressionsMin;
+  }
+
+  if (impressionsMax != null){
+    query = query + ' AND Impressions <= ' + impressionsMax;
+  }
+
+  if (clicksMin != null){
+    query = query + ' AND Clicks >= ' + clicksMin;
+  }
+
+  if (clicksMax != null){
+    query = query + ' AND Clicks <= ' + clicksMax;
+  }
+
+  if (conversionsMin != null){
+    conversionsMin--;
+    query = query + ' AND Conversions > ' + conversionsMin;
+  }
+
+  if (conversionsMax != null){
+    conversionsMax++;
+    query = query + ' AND Conversions < ' + conversionsMax;
+  }
+ 
+  if (conversionRateMin != null){
+    conversionRateMin = conversionRateMin - 0.01;
+    query = query + ' AND ConversionRate > ' + conversionRateMin;
+  }
+  
+  if (conversionRateMax != null){
+    conversionRateMax = conversionRateMax + 0.01;
+    query = query + ' AND ConversionRate < ' + conversionRateMax;
+  }  
+  
+  if (viewThroughConversionsMin != null){
+    query = query + ' AND ViewThroughConversions >= ' + viewThroughConversionsMin;
+  }
+  
+  if (viewThroughConversionsMax != null){
+    query = query + ' AND ViewThroughConversions <= ' + viewThroughConversionsMax;
+  }
+  
+  if (ctrMin != null){
+    ctrMin = ctrMin - 0.01;
+    query = query + ' AND Ctr > ' + ctrMin;
+  }
+  
+  if (ctrMax != null){
+    ctrMax = ctrMax + 0.01;
+    query = query + ' AND Ctr < ' + ctrMax;
+  }
+  
+  if (avgPositionMin != null){
+    avgPositionMin = avgPositionMin - 0.01;
+    query = query + ' AND AveragePosition > ' + avgPositionMin;
+  }
+  
+  if (avgPositionMax != null){
+    avgPositionMax = avgPositionMax + 0.01;
+    query = query + ' AND AveragePosition < ' + avgPositionMax;
+  }  
+  
+  if (costMin != null){
+    costMin = costMin;
+    query = query + ' AND Cost >= ' + costMin;
+  }
+  
+  if (costMax != null){
+    costMax = costMax;
+    query = query + ' AND Cost <= ' + costMax;
+  }  
+  
+  if (cpaMin != null){
+    cpaMin = cpaMin*1000000;
+    query = query + ' AND CostPerConversion > ' + cpaMin;
+  }
+  
+  if (cpaMax != null){
+    cpaMax = cpaMax*1000000;
+    query = query + ' AND CostPerConversion < ' + cpaMax;
+  }  
+   
+  if (qualityScoreMin != null){
+    queryQs = queryQs + ' AND QualityScore >= ' + qualityScoreMin;
+  }
+  
+  if (qualityScoreMax != null){
+    queryQs = queryQs + ' AND QualityScore <= ' + qualityScoreMax;
+  }   
+} // End of buildQuery function
+
+
+function emailNotification (s, b, email){
+  if (RECIPIENT_EMAIL != ""){
+    MailApp.sendEmail(email, s, b);
+  }
+} // End of emailNotification function
+
+
+// ----------------------------------------------------------------
+
+function getFilteredMccAccounts (){
+  var accountIterator;
+  var accountIds = [];
+  var accountId;
+  
+  if (mccLabelText != "no label") { // Filter accounts by MCC label
+	accountIterator = MccApp.accounts().withCondition("LabelNames CONTAINS '" + mccLabelText +"'").orderBy('Name').get();
+  } else { // Execute script for all accounts
+	accountIterator = MccApp.accounts().orderBy('Name').get();
+  }
+    
+  while (accountIterator.hasNext()) {
+    accountId = accountIterator.next().getCustomerId();
+    accountIds.push(accountId);
+  }
+  
+  return accountIds;
+} // End of getFilteredMccAccounts function
+
+
+function executeInSequence (sequentialIds, executeSequentiallyFunc) {
+  //Logger.log('Executing in sequence : ' + sequentialIds);
+  sequentialIds.forEach(function (accountId) {
+    body = body + "\nACCOUNT ID: " + accountId + "\n"; 
+    //Logger.log("\nACCOUNT ID: " + accountId + "\n" + " \n");
+    var account = MccApp.accounts().withIds([accountId]).get().next();
+    MccApp.select(account);
+    var res = executeSequentiallyFunc();
+  });
+} // End of executeInSequence function
+
+
+function main () {
+  try {
+   
+   buildQuery();  // query building 
+   // Logger.log("Query = " + query);
+    
+   if (mccLevelScript){
+     var accountIds = getFilteredMccAccounts();
+     // Logger.log(accountIds);
+     var sequentialIds = accountIds.slice(0);
+     if (accountIds.length > 0) {
+       executeInSequence(sequentialIds, run);
+     } else {
+       body = body + "No Accounts after filtering by mccLabelText '" + mccLabelText + "' \n";
+     }  
+   } else {
+     var aux = run();
+   }	 
+
+// ------------------------------- Send notification by email -------------------------------------
+
+   emailNotification(subject, body, RECIPIENT_EMAIL);
+    
+ } catch (exception) {
+   // Logger.log("Error: "+Logger.getLog());
+   // Logger.getLog();
+   body = body + subject_error + Logger.getLog();
+   emailNotification(subject_error, body, RECIPIENT_EMAIL);
+ }
+} // End of Script
