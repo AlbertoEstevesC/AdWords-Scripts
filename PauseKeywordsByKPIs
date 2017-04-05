@@ -376,16 +376,6 @@ function buildQuery (){
     query = query + ' AND AveragePosition < ' + avgPositionMax;
   }  
   
-  if (costMin != null){
-    costMin = costMin;
-    query = query + ' AND Cost >= ' + costMin;
-  }
-  
-  if (costMax != null){
-    costMax = costMax;
-    query = query + ' AND Cost <= ' + costMax;
-  }  
-  
   if (cpaMin != null){
     cpaMin = cpaMin*1000000;
     query = query + ' AND CostPerConversion > ' + cpaMin;
@@ -394,6 +384,18 @@ function buildQuery (){
   if (cpaMax != null){
     cpaMax = cpaMax*1000000;
     query = query + ' AND CostPerConversion < ' + cpaMax;
+  }  
+ 
+  if (costMin != null){
+    query = query + ' AND Cost >= ' + costMin;
+  } else if (cpaMin != null) {
+    var cpaMinAux = cpaMin/1000000;
+    query = query + ' AND Cost >= ' + cpaMinAux;
+    }
+  
+  
+  if (costMax != null){
+    query = query + ' AND Cost <= ' + costMax;
   }  
    
   if (qualityScoreMin != null){
