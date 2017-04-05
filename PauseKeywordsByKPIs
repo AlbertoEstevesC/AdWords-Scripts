@@ -242,19 +242,11 @@ function run (){
                                      .get();    
     }
 
-    if (!keywordIterator.hasNext()) {
-
-      if (!qualityScoreNull) {
-        body = body + "keywordLabelText exists but is not applied to any filtered keyword for this account \n";
-        body = body + "Paused Keywords: 0 \n";
-        return false; 
-        
-      } else if (!keywordIteratorAux.hasNext()){
-        body = body + "keywordLabelText exists but is not applied to any filtered keyword for this account \n";
-        body = body + "Paused Keywords: 0 \n";
-        return false;         
-      }
-    }
+    if ((!keywordIterator.hasNext()) && (!qualityScoreNull || !keywordIteratorAux.hasNext())) {
+      body = body + "keywordLabelText exists but is not applied to any filtered keyword for this account \n";
+      body = body + "Paused Keywords: 0 \n";
+      return false; 
+    } 
   } else { // no keywordLabel filtering   
     keywordIterator = AdWordsApp.keywords()
 	                            .withCondition("AdGroupId IN [" + adGroupIds + "] ")
