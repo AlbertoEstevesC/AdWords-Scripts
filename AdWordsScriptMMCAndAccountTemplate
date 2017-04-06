@@ -1,1 +1,125 @@
+/**
+ *   This AdWords Script Template is prepared to execute at Account level and at MCC level as well
+ *   You can choose how to execute it modifying mccLevelScript variable:
+ *
+ *            mccLevelScript = true; -> MCC Level execution
+ *            mccLevelScript = false; -> Account level execution
+ * 
+ *   In the case of MCC level execution, you can filter Accounts by lavel with mccLabelText variable:
+ * 
+ *            mccLabelText = 'no label'; -> NO filtering
+ *            mccLabelText = 'Other text'; -> Filtering by MCC Label that has 'Other text' name
+ *
+ *   Last version available in: https://github.com/AlbertoEstevesC/AdWords-Scripts/blob/master/AdWordsScriptMMCAndAccountTemplate
+ *
+ *   SPANISH explanation: https://www.albertoestevescorreia.com/adwords-script-plantilla-scripts-ejecutables-nivel-mcc-cuenta/
+ *
+ *   @Author: Alberto Esteves Correia
+ *   www.albertoestevescorreia.com
+ **/
 
+// ---------------- GLOBAL VARIABLES ---------------------------
+
+var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution
+var RECIPIENT_EMAIL = "alberto.esteves.correia@gmail.com"; // Enter an email if you want to receive script changes notifications
+var timePeriod = 'ALL_TIME'; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_keywordselector#forDateRange_1  	
+
+
+
+
+
+
+// FILTERING LABELS // If you don't want to filter by any label, DON'T make any change in its text // 'no label' = NO filtering
+
+var mccLabelText = 'no label'; // Filter AdWords accounts which have this MCC Account label						  
+var campaignLabelText = 'no label'; // Filter AdWords campaigns which have this campaign label
+var adGroupLabelText = 'no label'; // Filter AdWords adGroups which have this adGroup label
+var keywordLabelText = 'no label'; // Filter AdWords keywords which have this keyword label
+
+
+// Auxiliary Variables
+
+var queryQs = "";                            
+var query = 'KeywordMatchType IN '+keywordMatchTypes; 
+var scriptLabel = "botScript did it"; // Script will add this label to the keywords paused by it // If label doesn't exist, the script will create it 
+var campaignLabelId, adGroupLabelId, keywordLabelId;
+var subject = "Results from Pause Keywords Script execution";
+var body = "RESULTS from Pause Keywords Script execution: \n";
+var subject_error = "ERROR during Script execution";
+
+// ------------------------------------------------------------------------------------------------------------
+
+
+
+function run (){ 
+
+
+
+  return true;
+} // End of run function
+
+
+// ----------------------------------------------------------------
+
+function getFilteredMccAccounts (){
+  var accountIterator;
+  var accountIds = [];
+  var accountId;
+  
+  if (mccLabelText != "no label") { // Filter accounts by MCC label
+	accountIterator = MccApp.accounts().withCondition("LabelNames CONTAINS '" + mccLabelText +"'").orderBy('Name').get();
+  } else { // Execute script for all accounts
+	accountIterator = MccApp.accounts().orderBy('Name').get();
+  }
+    
+  while (accountIterator.hasNext()) {
+    accountId = accountIterator.next().getCustomerId();
+    accountIds.push(accountId);
+  }
+  
+  return accountIds;
+} // End of getFilteredMccAccounts function
+
+
+function executeInSequence (sequentialIds, executeSequentiallyFunc) {
+  //Logger.log('Executing in sequence : ' + sequentialIds);
+  sequentialIds.forEach(function (accountId) {
+    body = body + "\nACCOUNT ID: " + accountId + "\n"; 
+    //Logger.log("\nACCOUNT ID: " + accountId + "\n" + " \n");
+    var account = MccApp.accounts().withIds([accountId]).get().next();
+    MccApp.select(account);
+    var res = executeSequentiallyFunc();
+  });
+} // End of executeInSequence function
+
+
+function main () {
+  try {
+   
+   buildQuery();  // query building 
+   // Logger.log("Query = " + query);
+    
+   if (mccLevelScript){
+     var accountIds = getFilteredMccAccounts();
+     // Logger.log(accountIds);
+     var sequentialIds = accountIds.slice(0);
+     if (accountIds.length > 0) {
+       executeInSequence(sequentialIds, run);
+     } else {
+       body = body + "No Accounts after filtering by mccLabelText '" + mccLabelText + "' \n";
+     }  
+   } else {
+     var aux = run();
+   }	 
+
+// ------------------------------- Send notification by email -------------------------------------
+
+   emailNotification(subject, body, RECIPIENT_EMAIL);
+    
+ } catch (exception) {
+   // Logger.log("Error: "+Logger.getLog());
+   // Logger.getLog();
+   body = body + subject_error + Logger.getLog();
+   emailNotification(subject_error, body, RECIPIENT_EMAIL);
+ }
+} // End of Script
