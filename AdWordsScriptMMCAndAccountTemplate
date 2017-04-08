@@ -1,11 +1,11 @@
 /**
- *   This AdWords Script Template is prepared to execute at Account level and at MCC level as well
+ *   This AdWords Script Template is prepared to be executed at Account level and at MCC level as well
  *   You can choose how to execute it modifying mccLevelScript variable:
  *
  *            mccLevelScript = true; -> MCC Level execution
  *            mccLevelScript = false; -> Account level execution
  * 
- *   In the case of MCC level execution, you can filter Accounts by lavel with mccLabelText variable:
+ *   In the case of MCC level execution, you can filter Accounts by label with mccLabelText variable:
  * 
  *            mccLabelText = 'no label'; -> NO filtering
  *            mccLabelText = 'Other text'; -> Filtering by MCC Label that has 'Other text' name
@@ -15,48 +15,44 @@
  *   SPANISH explanation: https://www.albertoestevescorreia.com/adwords-script-plantilla-scripts-ejecutables-nivel-mcc-cuenta/
  *
  *   @Author: Alberto Esteves Correia
- *   www.albertoestevescorreia.com
+ *   https://www.albertoestevescorreia.com
  **/
 
 // ---------------- GLOBAL VARIABLES ---------------------------
 
-var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution
-var RECIPIENT_EMAIL = "alberto.esteves.correia@gmail.com"; // Enter an email if you want to receive script changes notifications
-var timePeriod = 'ALL_TIME'; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_keywordselector#forDateRange_1  	
+var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution	
+var mccLabelText = 'no label'; // Filter AdWords accounts which have this MCC Account label	// 'no label' = NO filtering	
 
-
-
-
-
-
-// FILTERING LABELS // If you don't want to filter by any label, DON'T make any change in its text // 'no label' = NO filtering
-
-var mccLabelText = 'no label'; // Filter AdWords accounts which have this MCC Account label						  
-var campaignLabelText = 'no label'; // Filter AdWords campaigns which have this campaign label
-var adGroupLabelText = 'no label'; // Filter AdWords adGroups which have this adGroup label
-var keywordLabelText = 'no label'; // Filter AdWords keywords which have this keyword label
-
-
-// Auxiliary Variables
-
-var queryQs = "";                            
-var query = 'KeywordMatchType IN '+keywordMatchTypes; 
-var scriptLabel = "botScript did it"; // Script will add this label to the keywords paused by it // If label doesn't exist, the script will create it 
-var campaignLabelId, adGroupLabelId, keywordLabelId;
-var subject = "Results from Pause Keywords Script execution";
-var body = "RESULTS from Pause Keywords Script execution: \n";
-var subject_error = "ERROR during Script execution";
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //                INSERT YOUR GLOBAL VARIABLES HERE                        //
+  //        (These variables may be used in any part of the script)          //
+ //                                                                         //
+///////////////////////////////////////////////////////////////////////////// 
 
 // ------------------------------------------------------------------------------------------------------------
 
 
 
-function run (){ 
+function accountCodeExecution (){ 
 
-
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //              INSERT YOUR GLOBAL SCRIPT CODE HERE                        //
+  //     (This code will be executed FOR EACH selected AdWords account)      //
+ //                                                                         //
+///////////////////////////////////////////////////////////////////////////// 
 
   return true;
-} // End of run function
+} // End of accountCodeExecution function
+
+
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //             INSERT YOUR AUXILIARY FUNCTIONS HERE                        //
+  //     (This code will be executed FOR EACH selected AdWords account)      //
+ //                                                                         //
+///////////////////////////////////////////////////////////////////////////// 
 
 
 // ----------------------------------------------------------------
@@ -68,15 +64,14 @@ function getFilteredMccAccounts (){
   
   if (mccLabelText != "no label") { // Filter accounts by MCC label
 	accountIterator = MccApp.accounts().withCondition("LabelNames CONTAINS '" + mccLabelText +"'").orderBy('Name').get();
-  } else { // Execute script for all accounts
+  } else { // Execute script for all MCC accounts
 	accountIterator = MccApp.accounts().orderBy('Name').get();
   }
-    
+
   while (accountIterator.hasNext()) {
     accountId = accountIterator.next().getCustomerId();
     accountIds.push(accountId);
   }
-  
   return accountIds;
 } // End of getFilteredMccAccounts function
 
@@ -84,8 +79,7 @@ function getFilteredMccAccounts (){
 function executeInSequence (sequentialIds, executeSequentiallyFunc) {
   //Logger.log('Executing in sequence : ' + sequentialIds);
   sequentialIds.forEach(function (accountId) {
-    body = body + "\nACCOUNT ID: " + accountId + "\n"; 
-    //Logger.log("\nACCOUNT ID: " + accountId + "\n" + " \n");
+    //Logger.log("\nACCOUNT ID: " + accountId + "\n");
     var account = MccApp.accounts().withIds([accountId]).get().next();
     MccApp.select(account);
     var res = executeSequentiallyFunc();
@@ -94,32 +88,39 @@ function executeInSequence (sequentialIds, executeSequentiallyFunc) {
 
 
 function main () {
-  try {
-   
-   buildQuery();  // query building 
-   // Logger.log("Query = " + query);
+  try {	  
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //            INSERT YOUR GLOBAL SCRIPT INICIAL CODE HERE                  //
+  //  (This code will be executed once BEFORE selecting any AdWords account) //
+ //                                                                         //
+/////////////////////////////////////////////////////////////////////////////   
     
-   if (mccLevelScript){
+   if (mccLevelScript){ // MCC Level execution
      var accountIds = getFilteredMccAccounts();
-     // Logger.log(accountIds);
      var sequentialIds = accountIds.slice(0);
      if (accountIds.length > 0) {
-       executeInSequence(sequentialIds, run);
+       executeInSequence(sequentialIds, accountCodeExecution);
      } else {
-       body = body + "No Accounts after filtering by mccLabelText '" + mccLabelText + "' \n";
+       // Logger.log("No Accounts after filtering by mccLabelText '" + mccLabelText + "' \n");
      }  
-   } else {
-     var aux = run();
-   }	 
-
-// ------------------------------- Send notification by email -------------------------------------
-
-   emailNotification(subject, body, RECIPIENT_EMAIL);
+   } else { // Account Level execution
+     var aux = accountCodeExecution();
+   }
+   
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //            INSERT YOUR GLOBAL SCRIPT FINAL CODE HERE                    //
+  //  (This code will be executed AFTER processing ALL AdWords accounts)     //
+ //                                                                         //
+///////////////////////////////////////////////////////////////////////////// 
     
  } catch (exception) {
-   // Logger.log("Error: "+Logger.getLog());
-   // Logger.getLog();
-   body = body + subject_error + Logger.getLog();
-   emailNotification(subject_error, body, RECIPIENT_EMAIL);
+	 /////////////////////////////////////////////////////////////////////////////
+    //                                                                         //	
+   //                    INSERT YOUR ERROR CODE HERE                          //
+  //  (This code will be executed ONLY in case of SCRIPT EXECUTION ERROR)    //
+ //                                                                         //
+///////////////////////////////////////////////////////////////////////////// 
  }
 } // End of Script
