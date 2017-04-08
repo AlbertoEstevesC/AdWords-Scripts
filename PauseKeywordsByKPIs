@@ -37,7 +37,7 @@
 // ---------------- GLOBAL VARIABLES ---------------------------
 
 var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution
-var RECIPIENT_EMAIL = "alberto.esteves.correia@gmail.com"; // Enter an email if you want to receive script changes notifications
+var RECIPIENT_EMAIL = "INSERT_YOUR_EMAIL_HERE"; // Enter an email if you want to receive script changes notifications
 var timePeriod = 'ALL_TIME'; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_keywordselector#forDateRange_1  	
 
 
