@@ -38,7 +38,7 @@ function accountCodeExecution (){
 
 	 /////////////////////////////////////////////////////////////////////////////
     //                                                                         //	
-   //              INSERT YOUR GLOBAL SCRIPT CODE HERE                        //
+   //              INSERT YOUR LOCAL SCRIPT CODE HERE                        //
   //     (This code will be executed FOR EACH selected AdWords account)      //
  //                                                                         //
 ///////////////////////////////////////////////////////////////////////////// 
