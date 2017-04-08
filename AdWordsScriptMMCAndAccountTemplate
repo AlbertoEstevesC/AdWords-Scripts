@@ -86,6 +86,8 @@ function executeInSequence (sequentialIds, executeSequentiallyFunc) {
   });
 } // End of executeInSequence function
 
+// ----------------------------------------------------------------
+
 
 function main () {
   try {	  
@@ -116,6 +118,7 @@ function main () {
 ///////////////////////////////////////////////////////////////////////////// 
     
  } catch (exception) {
+	 // Logger.getLog();
 	 /////////////////////////////////////////////////////////////////////////////
     //                                                                         //	
    //                    INSERT YOUR ERROR CODE HERE                          //
