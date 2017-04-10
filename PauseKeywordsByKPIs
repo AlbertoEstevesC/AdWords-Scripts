@@ -10,7 +10,6 @@
  *   Minimum Conversions              | Maximum Conversions
  *   Minimum Cost                     | Maximum Cost 
  *   Minimum Cost per Conversion      | Maximum Cost per Conversion
- *   Minimum View Through Conversions | Maximum View Through Conversions 
  *   Minimum Average Position         | Maximum Average Position 
  *   Minimum Conversion rate          | Maximum Conversion rate
  *   Minimum CTR                      | Maximum CTR
@@ -63,9 +62,6 @@ var conversionsMax = null;
 
 var costMin = null; 
 var costMax = null; 
-
-var viewThroughConversionsMin = null; 
-var viewThroughConversionsMax = null; 
 
 
 // Number values with decimals allowed (if you want)
@@ -340,14 +336,6 @@ function buildQuery (){
   if (conversionRateMax != null){
     conversionRateMax = conversionRateMax + 0.01;
     query = query + ' AND ConversionRate < ' + conversionRateMax;
-  }  
-  
-  if (viewThroughConversionsMin != null){
-    query = query + ' AND ViewThroughConversions >= ' + viewThroughConversionsMin;
-  }
-  
-  if (viewThroughConversionsMax != null){
-    query = query + ' AND ViewThroughConversions <= ' + viewThroughConversionsMax;
   }
   
   if (ctrMin != null){
