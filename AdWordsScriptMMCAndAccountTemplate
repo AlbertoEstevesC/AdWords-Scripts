@@ -93,7 +93,7 @@ function main () {
   try {	  
 	 /////////////////////////////////////////////////////////////////////////////
     //                                                                         //	
-   //            INSERT YOUR GLOBAL SCRIPT INICIAL CODE HERE                  //
+   //            INSERT YOUR GLOBAL SCRIPT INITIAL CODE HERE                  //
   //  (This code will be executed once BEFORE selecting any AdWords account) //
  //                                                                         //
 /////////////////////////////////////////////////////////////////////////////   
