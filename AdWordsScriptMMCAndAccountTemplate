@@ -50,7 +50,7 @@ function accountCodeExecution (){
 	 /////////////////////////////////////////////////////////////////////////////
     //                                                                         //	
    //             INSERT YOUR AUXILIARY FUNCTIONS HERE                        //
-  //     (This code will be executed FOR EACH selected AdWords account)      //
+  //     (This code will be executed FOR EACH function call)                 //
  //                                                                         //
 ///////////////////////////////////////////////////////////////////////////// 
 
