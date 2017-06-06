@@ -1,5 +1,8 @@
 /**
  *   This AdWords Script Template is prepared to be executed at Account level and at MCC level as well
+ *   Version 1.1
+ *   Changelog v1.1 - Added parallel/sequential execution option
+ *
  *   You can choose how to execute it modifying mccLevelScript variable:
  *
  *            mccLevelScript = true; -> MCC Level execution
@@ -9,6 +12,11 @@
  * 
  *            mccLabelText = 'no label'; -> NO filtering
  *            mccLabelText = 'Other text'; -> Filtering by MCC Label that has 'Other text' name
+ * 
+ *   NEW v1.1 You can choose if enable or not parallel execution changing parallelExecution variable as following:
+ * 
+ *            parallelExecution = true; -> Parallel execution ENABLED
+ *            parallelExecution = false; -> Parallel execution DISABLED // This is the by default option
  *
  *   Last version available in: https://github.com/AlbertoEstevesC/AdWords-Scripts/blob/master/AdWordsScriptMMCAndAccountTemplate
  *
@@ -22,6 +30,7 @@
 
 var mccLevelScript = true; // "true" value for MCC level script execution // "false" value for account level script execution	
 var mccLabelText = 'no label'; // Filter AdWords accounts which have this MCC Account label	// 'no label' = NO filtering	
+var parallelExecution = false; // "true" to enable parallel AdWords Scripts execution // "false" to disable it. This is the by default option
 
 	 /////////////////////////////////////////////////////////////////////////////
     //                                                                         //	
@@ -100,12 +109,26 @@ function main () {
     
    if (mccLevelScript){ // MCC Level execution
      var accountIds = getFilteredMccAccounts();
-     var sequentialIds = accountIds.slice(0);
+      
+     var sequentialIds;
+     
+     if (parallelExecution) {
+       var parallelIds = accountIds.slice(0, 50);
+       sequentialIds = accountIds.slice(50);
+       
+       // execute accross accounts
+       MccApp.accounts()
+         .withIds(parallelIds)
+         .executeInParallel('accountCodeExecution');
+       
+     } else {  // sequential execution only
+       sequentialIds = accountIds.slice(0);
+     }
+     
      if (accountIds.length > 0) {
        executeInSequence(sequentialIds, accountCodeExecution);
-     } else {
-       // Logger.log("No Accounts after filtering by mccLabelText '" + mccLabelText + "' \n");
-     }  
+     } 
+     
    } else { // Account Level execution
      var aux = accountCodeExecution();
    }
