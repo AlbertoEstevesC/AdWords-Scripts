@@ -38,6 +38,17 @@ function main () {
    
     placement = DisplayPlacements.next();
     Logger.log(placement.getUrl());
-    placement.remove();
+
+	var campaign = placement.getCampaign();
+    var adGroup = placement.getAdGroup();    
+    if (placementurl != 'anonymous.google') {
+      var excludeOperation = adGroup.display().newPlacementBuilder().withUrl(placementurl).exclude(); // Exclude Display placement detected
+      
+    }
+      if (!excludeOperation.isSuccessful()) {
+		  Logger.log("Could not exclude : " + placementurl);
+	  } else { 
+      Logger.log("Don't exclude anonymous.google.com !");
+	}
   }  
 }
