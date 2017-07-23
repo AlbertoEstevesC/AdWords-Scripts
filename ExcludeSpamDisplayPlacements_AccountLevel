@@ -43,11 +43,10 @@ function main () {
     var adGroup = placement.getAdGroup();    
     if (placementurl != 'anonymous.google') {
       var excludeOperation = adGroup.display().newPlacementBuilder().withUrl(placementurl).exclude(); // Exclude Display placement detected
-      
-    }
       if (!excludeOperation.isSuccessful()) {
-		  Logger.log("Could not exclude : " + placementurl);
-	  } else { 
+		Logger.log("Could not exclude : " + placementurl);
+	  }	 
+    } else { 
       Logger.log("Don't exclude anonymous.google.com !");
 	}
   }  
