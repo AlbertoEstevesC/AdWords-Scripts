@@ -13,7 +13,7 @@
  */
 
 
-var impressionsMinimum = 1; // Select Display placements which have at least that number of impressions 
+var impressionsMinimum = 2; // Select Display placements which have at least that number of impressions 
 var maxCtr = 0.49; // Select Display placements which have at least that Click Through Rate percentage 
 var conversionsLimit = 0; // Select Display placements which have no more than that number of conversions 
 var ViewThroughConversionsLimit = 0; // Select Display placements which have no more than that number of post-impression conversions 
