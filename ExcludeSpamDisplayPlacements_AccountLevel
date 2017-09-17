@@ -31,7 +31,7 @@ function main () {
 	.forDateRange(timePeriod)
     .get();
     
-  var urlplacement;
+  var placementurl;
   var placement;
   
   while (DisplayPlacements.hasNext()) {
