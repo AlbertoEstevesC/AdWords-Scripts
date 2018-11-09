@@ -23,7 +23,7 @@ var mccLabelText = "no label"; // Filter AdWords accounts which have a MCC Accou
 							   // If you don't want to filter by any MCC label, DO NOT make any change in this text 
 var timePeriod = "ALL_TIME"; // Period of time to analyze. You can choose another value according to https://developers.google.com/adwords/scripts/docs/reference/adwordsapp/adwordsapp_campaignselector?hl=es-419#forDateRange_1  							  							  
 							  							  
-var SPREADSHEET_URL = "INSERT YOUR SPREADSHEET URL HERE"; // Make a copy from https://docs.google.com/spreadsheets/d/1QM25rhifHLN6xElLyMPgeJVtx5hz4qI9415aNnyhmmA/
+var SPREADSHEET_URL = "INSERT YOUR SPREADSHEET URL HERE"; // Make a copy from https://docs.google.com/spreadsheets/d/1qXJKx-RmoBW5WzjCxS0y0i9lFvxLAONIk7mBg-xNS_M/
 var SHEET_NAME = "LowPerformance placements"; // Name of the specific sheet in the spreadsheet.
 var ss = SpreadsheetApp.openByUrl(SPREADSHEET_URL);
 var sheet = ss.getSheetByName(SHEET_NAME);
